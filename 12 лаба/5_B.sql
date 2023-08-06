@@ -1,0 +1,27 @@
+	select * into ##student from UNIVER.dbo.STUDENT;
+--B
+--неподтвержденное чтение
+set transaction isolation level READ COMMITTED
+begin transaction
+	insert ##student (IDGROUP, NAME, BDAY) values(4,'Гурина Кристина Сергеевна', '2003-09-28');
+	update ##student set IDGROUP = 99 where IDGROUP = 4;
+	select * from ##student;
+----
+	rollback;
+select * from ##student;
+
+--неповторяющееся чтение
+set transaction isolation level READ COMMITTED
+	begin transaction
+		update ##student set IDGROUP = 99 where NAME like '%Хартанович%';
+		select * from ##student;
+	commit;
+
+--фантомное чтение
+	set transaction isolation level READ COMMITTED
+	begin transaction
+		insert ##student (NAME) values('Силюк');
+		select * from ##student;
+	commit;
+
+	drop table ##student;
